@@ -1,3 +1,4 @@
+
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
@@ -8,7 +9,7 @@ struct Vector {
 };
 
 double vectorLength(const Vector &v) {
-  return std::sqrt(v.x * v.x, v.y * v.y, v.z * v.z);
+  return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z); // Corrected line
 }
 
 double angleBetweenVectors(const Vector &v1, const Vector &v2) {

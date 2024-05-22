@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def sum_functional_series(x, tol=1e-6):
     k = 1
     total_sum = 0
