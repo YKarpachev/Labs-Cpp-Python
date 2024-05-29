@@ -39,7 +39,7 @@ std::vector<double> coordinateDescent(std::vector<double> x0, double tol = 1e-6,
 }
 
 int main() {
-  std::vector<double> x0 = {0.0, 0.0}; // yfxfkmyjt ghb,kb;tybt
+  std::vector<double> x0 = {0.0, 0.0}; // начальное приближение
   std::vector<double> solution = coordinateDescent(x0);
 
   std::cout << "Решение найдено в: ";
