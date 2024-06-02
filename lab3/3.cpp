@@ -1,24 +1,27 @@
 #include <cmath>
-#include <iomanip>
 #include <iostream>
 
-double sumNumericalSeries(double tol = 1e-6) {
-  int k = 1;
-  double total_sum = 0.0;
-  double term = std::numeric_limits<double>::infinity();
+// Функция для суммирования числового ряда с заданной точностью
+double sum_numerical_series(double tol = 1e-6) {
+  int k = 1;              // Счетчик членов ряда
+  double total_sum = 0.0; // Переменная для хранения суммы ряда
+  double term = INFINITY; // Переменная для хранения текущего члена ряда
+
   while (fabs(term) > tol) {
-    term = 26 / pow(2, k - 1) + pow(-1, k - 1) / (2 * pow(3, k - 1));
-    total_sum += term;
-    ++k;
+    term = 26 / pow(2, k - 1) +
+           pow(-1, k - 1) / (2 * pow(3, k - 1)); // Вычисляем текущий член ряда
+    total_sum += term; // Добавляем текущий член к сумме
+    k++;               // Увеличиваем счетчик
   }
   return total_sum;
 }
 
 int main() {
-  double tol = 1e-6;
-  double numerical_series_sum = sumNumericalSeries(tol);
+  double tol = 1e-6; // Заданная точность
+                     // Вычисление суммы числового ряда
+  double numerical_series_sum = sum_numerical_series(tol);
 
-  std::cout << std::fixed << std::setprecision(7);
+  // Вывод результата
   std::cout << "Сумма числового ряда: " << numerical_series_sum << std::endl;
 
   return 0;

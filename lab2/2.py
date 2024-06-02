@@ -1,32 +1,48 @@
 import numpy as np
+from sympy import symbols, Eq, solve
 
-# Генерация случайных координат векторов
-np.random.seed(1)
-v1 = np.random.randint(-10, 10, 3)
-v2 = np.random.randint(-10, 10, 3)
+# Генерация случайных коэффициентов для плоскости и двух точек
+np.random.seed(42)
+A, B, C, D = np.random.randint(-10, 10, 4)
+x1, y1, z1 = np.random.randint(-10, 10, 3)
+x2, y2, z2 = np.random.randint(-10, 10, 3)
 
-# Длины векторов
-length_v1 = np.linalg.norm(v1)
-length_v2 = np.linalg.norm(v2)
+# Уравнение плоскости: Ax + By + Cz + D = 0
+# Уравнение прямой: (x, y, z) = (x1, y1, z1) + t * ((x2 - x1), (y2 - y1), (z2 - z1))
 
-# Угол между векторами
-cos_angle = np.dot(v1, v2) / (length_v1 * length_v2)
-angle = np.arccos(cos_angle) * 180 / np.pi
 
-# Сумма и разность векторов
-sum_vectors = v1 + v2
-diff_vectors = v1 - v2
+# Проверка принадлежности точки плоскости
+def is_point_on_plane(A, B, C, D, x, y, z):
+    return A * x + B * y + C * z + D == 0
 
-# Проверка параллельности
-parallel = np.allclose(np.cross(v1, v2), 0)
 
-# Векторное произведение
-cross_product = np.cross(v1, v2)
+# Проверка пересечения прямой и плоскости
+x, y, z = symbols("x y z")
+plane_eq = Eq(A * x + B * y + C * z + D, 0)
+line_eq = (
+    x1 + (x2 - x1) * symbols("t"),
+    y1 + (y2 - y1) * symbols("t"),
+    z1 + (z2 - z1) * symbols("t"),
+)
+intersection_line_plane = solve(
+    plane_eq.subs({x: line_eq[0], y: line_eq[1], z: line_eq[2]}), symbols("t")
+)
 
-print(f"Длина первого вектора: {length_v1}")
-print(f"Длина второго вектора: {length_v2}")
-print(f"Угол между векторами: {angle} градусов")
-print(f"Сумма векторов: {sum_vectors}")
-print(f"Разность векторов: {diff_vectors}")
-print(f"Вектора параллельны: {'да' if parallel else 'нет'}")
-print(f"Векторное произведение: {cross_product}")
+# Вывод результатов
+print(f"Уравнение плоскости: {A}x + {B}y + {C}z + {D} = 0")
+print(
+    f"Уравнение прямой: (x, y, z) = ({x1}, {y1}, {z1}) + t * (({x2 - x1}), ({y2 - y1}), ({z2 - z1}))"
+)
+print(
+    f"Точка пересечения прямой и плоскости: {'существует' if intersection_line_plane else 'не существует'}"
+)
+
+# Координаты точки пересечения (если существует)
+if intersection_line_plane:
+    t_val = intersection_line_plane[0]
+    intersection_point = (
+        line_eq[0].subs(symbols("t"), t_val),
+        line_eq[1].subs(symbols("t"), t_val),
+        line_eq[2].subs(symbols("t"), t_val),
+    )
+    print(f"Координаты точки пересечения: {intersection_point}")

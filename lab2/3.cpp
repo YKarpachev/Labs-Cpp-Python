@@ -1,63 +1,96 @@
 #include <cmath>
-#include <cstdlib>
-#include <ctime>
 #include <iostream>
+#include <vector>
 
-struct Point {
-  double x, y;
+// Структура для хранения коэффициентов уравнения окружности
+struct Circle {
+  double x, y, r;
 };
 
-struct Ellipse {
-  double h, k, a, b;
+// Структура для хранения коэффициентов уравнения прямой
+struct Line {
+  double a, b, c;
 };
 
-bool isPointOnEllipse(const Ellipse &ellipse, const Point &point) {
-  return std::abs((std::pow(point.x - ellipse.h, 2) / std::pow(ellipse.a, 2)) +
-                  (std::pow(point.y - ellipse.k, 2) / std::pow(ellipse.b, 2)) -
-                  1) < 1e-6;
+// Функция для вычисления расстояния от центра окружности до прямой
+double distanceCircleToLine(const Circle &circle, const Line &line) {
+  return std::abs(line.a * circle.x + line.b * circle.y + line.c) /
+         std::sqrt(line.a * line.a + line.b * line.b);
 }
 
-Point findFoci(const Ellipse &ellipse, bool firstFocus) {
-  double c = std::sqrt(std::abs(ellipse.a * ellipse.a - ellipse.b * ellipse.b));
-  if (ellipse.a > ellipse.b) {
-    return {ellipse.h + (firstFocus ? c : -c), ellipse.k};
-  } else {
-    return {ellipse.h, ellipse.k + (firstFocus ? c : -c)};
+// Функция для нахождения точек пересечения окружности и прямой
+std::vector<std::pair<double, double>> findIntersection(const Circle &circle,
+                                                        const Line &line) {
+  std::vector<std::pair<double, double>> intersections;
+  double x0 = circle.x, y0 = circle.y, r = circle.r;
+  double a = line.a, b = line.b, c = line.c;
+
+  double dist = distanceCircleToLine(circle, line);
+
+  if (dist > r) {
+    // Прямая не пересекает окружность
+    return intersections;
   }
-}
 
-double findEccentricity(const Ellipse &ellipse) {
-  double c = std::sqrt(std::abs(ellipse.a * ellipse.a - ellipse.b * ellipse.b));
-  return c / std::max(ellipse.a, ellipse.b);
-}
+  double x1, x2, y1, y2;
 
-double findDirectrixDistance(const Ellipse &ellipse) {
-  double c = std::sqrt(std::abs(ellipse.a * ellipse.a - ellipse.b * ellipse.b));
-  return ellipse.a * ellipse.a / c;
+  if (b != 0) {
+    double k = -a / b;
+    double b0 = -c / b;
+    double A = 1 + k * k;
+    double B = 2 * (k * b0 - k * y0 - x0);
+    double C = x0 * x0 + y0 * y0 + b0 * b0 - 2 * b0 * y0 - r * r;
+
+    double D = B * B - 4 * A * C;
+
+    if (D < 0) {
+      // Прямая не пересекает окружность
+      return intersections;
+    }
+
+    x1 = (-B + std::sqrt(D)) / (2 * A);
+    x2 = (-B - std::sqrt(D)) / (2 * A);
+    y1 = k * x1 + b0;
+    y2 = k * x2 + b0;
+  } else {
+    x1 = x2 = -c / a;
+    y1 = y0 + std::sqrt(r * r - (x1 - x0) * (x1 - x0));
+    y2 = y0 - std::sqrt(r * r - (x1 - x0) * (x1 - x0));
+  }
+
+  intersections.push_back({x1, y1});
+  intersections.push_back({x2, y2});
+
+  return intersections;
 }
 
 int main() {
-  std::srand(std::time(0));
+  // Генерация случайных коэффициентов для окружности и прямой
+  Circle circle = {static_cast<double>(std::rand() % 21 - 10),
+                   static_cast<double>(std::rand() % 21 - 10),
+                   static_cast<double>(std::rand() % 10 + 1)};
+  Line line = {static_cast<double>(std::rand() % 21 - 10),
+               static_cast<double>(std::rand() % 21 - 10),
+               static_cast<double>(std::rand() % 21 - 10)};
 
-  Ellipse ellipse = {std::rand() % 21 - 10, std::rand() % 21 - 10,
-                     std::rand() % 9 + 1, std::rand() % 9 + 1};
-  Point point = {std::rand() % 21 - 10, std::rand() % 21 - 10};
+  // Нахождение точек пересечения окружности и прямой
+  auto intersections = findIntersection(circle, line);
 
-  bool pointOnEllipse = isPointOnEllipse(ellipse, point);
-  Point focus1 = findFoci(ellipse, true);
-  Point focus2 = findFoci(ellipse, false);
-  double eccentricity = findEccentricity(ellipse);
-  double directrixDistance = findDirectrixDistance(ellipse);
+  // Вывод результатов
+  std::cout << "Центр окружности: (" << circle.x << ", " << circle.y
+            << "), радиус: " << circle.r << std::endl;
+  std::cout << "Уравнение прямой: " << line.a << "x + " << line.b << "y + "
+            << line.c << " = 0" << std::endl;
 
-  std::cout << "Точка принадлежит эллипсу: " << (pointOnEllipse ? "да" : "нет")
-            << std::endl;
-  std::cout << "Координаты фокусов эллипса: (" << focus1.x << ", " << focus1.y
-            << "), (" << focus2.x << ", " << focus2.y << ")" << std::endl;
-  std::cout << "Длины полуосей эллипса: " << ellipse.a << ", " << ellipse.b
-            << std::endl;
-  std::cout << "Эксцентриситет эллипса: " << eccentricity << std::endl;
-  std::cout << "Расстояние от директрис до центра: " << directrixDistance
-            << std::endl;
+  if (intersections.empty()) {
+    std::cout << "Прямая не пересекает окружность." << std::endl;
+  } else {
+    std::cout << "Точки пересечения окружности и прямой: " << std::endl;
+    for (const auto &point : intersections) {
+      std::cout << "(" << point.first << ", " << point.second << ")"
+                << std::endl;
+    }
+  }
 
   return 0;
 }

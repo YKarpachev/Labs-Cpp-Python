@@ -1,22 +1,31 @@
 import numpy as np
 
 
-def cramer_rule(A, B):
-    det_A = np.linalg.det(A)
-    if det_A == 0:
-        raise ValueError("Det = 0")
+# Функция для вычисления определителя матрицы
+def determinant(A):
+    return np.linalg.det(A)
+
+
+# Функция для решения системы линейных уравнений методом Крамера
+def kramer(A, B):
     n = len(B)
+    det_A = determinant(A)
+    if det_A == 0:
+        raise ValueError("Матрица вырождена, решение невозможно.")
+
     x = np.zeros(n)
     for i in range(n):
-        A_temp = np.copy(A)
-        A_temp[:, i] = B
-        x[i] = np.linalg.det(A_temp) / det_A
+        A_copy = A.copy()
+        A_copy[:, i] = B
+        x[i] = determinant(A_copy) / det_A
     return x
 
 
-A = np.array([[7, -3, 2], [1, -8, 1], [6, -6, 2]])
-B = np.array([1, 1, -1])
+# Коэффициенты матрицы A и вектора B
+A = np.array([[7, -3, 2], [1, -8, 1], [6, -6, 2]], dtype=float)
+B = np.array([1, 1, -1], dtype=float)
 
-solution = cramer_rule(A, B)
-print("Крамер:")
+# Решение системы методом Крамера
+solution = kramer(A, B)
+print("Метод Крамера:")
 print(solution)

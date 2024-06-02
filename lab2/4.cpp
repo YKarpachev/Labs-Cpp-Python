@@ -1,75 +1,78 @@
-#include <cmath>
-#include <cstdlib>
-#include <ctime>
 #include <iostream>
+#include <vector>
 
-struct Point {
-  double x, y, z;
+// Структура для хранения коэффициентов уравнения эллипса
+struct Ellipse {
+  double h, k, a, b;
 };
 
-struct Plane {
-  double A, B, C, D;
-};
-
+// Структура для хранения коэффициентов уравнения прямой
 struct Line {
-  Point p1, p2;
+  double A, B, C;
 };
 
-bool isPointOnHyperbolicParaboloid(const Point &point, double a, double b) {
-  return std::abs(point.z - (point.x * point.x / (a * a) -
-                             point.y * point.y / (b * b))) < 1e-6;
-}
+// Функция для нахождения точек пересечения эллипса и прямой
+std::vector<std::pair<double, double>> findIntersection(const Ellipse &ellipse,
+                                                        const Line &line) {
+  std::vector<std::pair<double, double>> intersections;
 
-bool doesPlaneIntersectHyperbolicParaboloid(const Plane &plane, double a,
-                                            double b) {
-  for (double x = -10; x <= 10; x += 0.1) {
-    for (double y = -10; y <= 10; y += 0.1) {
-      double z = x * x / (a * a) - y * y / (b * b);
-      if (std::abs(plane.A * x + plane.B * y + plane.C * z + plane.D) < 1e-6) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
+  double h = ellipse.h, k = ellipse.k, a = ellipse.a, b = ellipse.b;
+  double A = line.A, B = line.B, C = line.C;
 
-bool doesLineIntersectHyperbolicParaboloid(const Line &line, double a,
-                                           double b) {
-  for (double t = 0; t <= 1; t += 0.01) {
-    Point point = {line.p1.x + t * (line.p2.x - line.p1.x),
-                   line.p1.y + t * (line.p2.y - line.p1.y),
-                   line.p1.z + t * (line.p2.z - line.p1.z)};
-    if (isPointOnHyperbolicParaboloid(point, a, b)) {
-      return true;
-    }
+  double A1 = (A * A) / (a * a) + (B * B) / (b * b);
+  double B1 =
+      2 * A * C / (a * a) + 2 * B * k * B / (b * b) - 2 * h * A * B / (b * b);
+  double C1 =
+      (C * C) / (a * a) + (B * B) * (h * h) / (b * b) - 2 * h * A * C / (b * b);
+
+  double D = B1 * B1 - 4 * A1 * C1;
+
+  if (D < 0) {
+    // Прямая не пересекает эллипс
+    return intersections;
   }
-  return false;
+
+  double x1 = (-B1 + std::sqrt(D)) / (2 * A1);
+  double x2 = (-B1 - std::sqrt(D)) / (2 * A1);
+
+  double y1 = (-C - A * x1) / B;
+  double y2 = (-C - A * x2) / B;
+
+  intersections.push_back({x1, y1});
+  intersections.push_back({x2, y2});
+
+  return intersections;
 }
 
 int main() {
-  std::srand(std::time(0));
+  // Генерация случайных коэффициентов для эллипса и прямой
+  Ellipse ellipse = {static_cast<double>(std::rand() % 21 - 10),
+                     static_cast<double>(std::rand() % 21 - 10),
+                     static_cast<double>(std::rand() % 10 + 1),
+                     static_cast<double>(std::rand() % 10 + 1)};
+  Line line = {static_cast<double>(std::rand() % 21 - 10),
+               static_cast<double>(std::rand() % 21 - 10),
+               static_cast<double>(std::rand() % 21 - 10)};
 
-  double a = std::rand() % 9 + 1;
-  double b = std::rand() % 9 + 1;
+  // Нахождение точек пересечения эллипса и прямой
+  auto intersections = findIntersection(ellipse, line);
 
-  Plane plane = {std::rand() % 21 - 10, std::rand() % 21 - 10,
-                 std::rand() % 21 - 10, std::rand() % 21 - 10};
-  Line line = {
-      {std::rand() % 21 - 10, std::rand() % 21 - 10, std::rand() % 21 - 10},
-      {std::rand() % 21 - 10, std::rand() % 21 - 10, std::rand() % 21 - 10}};
-  Point point = {std::rand() % 21 - 10, std::rand() % 21 - 10,
-                 std::rand() % 21 - 10};
+  // Вывод результатов
+  std::cout << "Центр эллипса: (" << ellipse.h << ", " << ellipse.k
+            << "), полуоси: a = " << ellipse.a << ", b = " << ellipse.b
+            << std::endl;
+  std::cout << "Уравнение прямой: " << line.A << "x + " << line.B << "y + "
+            << line.C << " = 0" << std::endl;
 
-  bool pointOnParaboloid = isPointOnHyperbolicParaboloid(point, a, b);
-  bool planeIntersects = doesPlaneIntersectHyperbolicParaboloid(plane, a, b);
-  bool lineIntersects = doesLineIntersectHyperbolicParaboloid(line, a, b);
-
-  std::cout << "Точка принадлежит гиперболическому параболоиду: "
-            << (pointOnParaboloid ? "да" : "нет") << std::endl;
-  std::cout << "Плоскость пересекает гиперболический параболоид: "
-            << (planeIntersects ? "да" : "нет") << std::endl;
-  std::cout << "Прямая пересекает гиперболический параболоид: "
-            << (lineIntersects ? "да" : "нет") << std::endl;
+  if (intersections.empty()) {
+    std::cout << "Прямая не пересекает эллипс." << std::endl;
+  } else {
+    std::cout << "Точки пересечения эллипса и прямой: " << std::endl;
+    for (const auto &point : intersections) {
+      std::cout << "(" << point.first << ", " << point.second << ")"
+                << std::endl;
+    }
+  }
 
   return 0;
 }

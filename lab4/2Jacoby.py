@@ -1,6 +1,7 @@
 import numpy as np
 
 
+# Функция для проверки диагонального преобладания матрицы
 def is_diagonally_dominant(A):
     for i in range(len(A)):
         sum_row = sum(abs(A[i][j]) for j in range(len(A)) if j != i)
@@ -9,6 +10,7 @@ def is_diagonally_dominant(A):
     return True
 
 
+# Функция для решения системы линейных уравнений методом Якоби
 def jacobi(A, B, x_init, tol=1e-10, max_iterations=100000):
     if not is_diagonally_dominant(A):
         raise ValueError("Матрица не диагонально доминирующая.")
@@ -27,13 +29,12 @@ def jacobi(A, B, x_init, tol=1e-10, max_iterations=100000):
     raise ValueError("Не сходится")
 
 
+# Коэффициенты матрицы A и вектора B
 A = np.array([[7, -3, 2], [1, -8, 1], [6, -6, 2]], dtype=float)
 B = np.array([1, 1, -1], dtype=float)
 x_init = np.zeros(len(B))
 
-try:
-    solution = jacobi(A, B, x_init)
-    print("Метод якоби:")
-    print(solution)
-except ValueError as e:
-    print(e)
+# Решение системы методом Якоби
+solution = jacobi(A, B, x_init)
+print("Метод Якоби:")
+print(solution)
